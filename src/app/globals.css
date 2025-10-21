@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+--bg: #0b0f16;
+}
+
+
+html, body, #__next { height: 100%; }
+body { background: var(--bg); color: white; }
+
+
+/* Kleine Helfer */
+.container { @apply mx-auto max-w-6xl px-4; }
+.card { @apply rounded-brand border border-white/10 bg-white/5 backdrop-blur-sm shadow; }
+.btn { @apply inline-flex items-center gap-2 rounded-brand px-4 py-2 font-medium transition; }
+.btn-primary { @apply bg-product-shiftrix text-white hover:opacity-90 active:scale-[0.99]; }
