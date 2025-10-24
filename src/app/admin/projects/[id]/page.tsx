@@ -1,3 +1,4 @@
+// src/app/admin/projects/[id]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { fetchProjectById } from "../actions";
@@ -168,7 +169,7 @@ function AvailabilityPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Verfügbarkeit</h2>
       <p className="text-sm text-white/70">
-        Hier können Mitarbeiter künftig ihre Verfügbarkeiten eintragen.  
+        Hier können Mitarbeiter künftig ihre Verfügbarkeiten eintragen.{"  "}
         Nächster Schritt: Tabelle <code>availability</code> mit{" "}
         <code>project_id</code>.
       </p>
@@ -181,7 +182,7 @@ function ShiftplanPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Schichtplan</h2>
       <p className="text-sm text-white/70">
-        Planung und Zuweisung von Schichten.  
+        Planung und Zuweisung von Schichten.{"  "}
         Nächster Schritt: Tabelle <code>shifts</code> mit{" "}
         <code>project_id</code>.
       </p>
@@ -194,7 +195,7 @@ function TimeTrackingPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Zeiterfassung</h2>
       <p className="text-sm text-white/70">
-        Manuelle oder automatische Zeiterfassung.  
+        Manuelle oder automatische Zeiterfassung.{"  "}
         Tabelle <code>time_entries</code> mit <code>project_id</code>.
       </p>
     </div>
@@ -206,7 +207,7 @@ function VacationPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Urlaubsplaner</h2>
       <p className="text-sm text-white/70">
-        Urlaubsanträge und Freigabeprozess.  
+        Urlaubsanträge und Freigabeprozess.{"  "}
         Tabelle <code>vacations</code> mit <code>project_id</code>.
       </p>
     </div>
@@ -218,7 +219,7 @@ function TasksPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Projektaufgaben</h2>
       <p className="text-sm text-white/70">
-        Aufgabenverwaltung, Status, Priorität.  
+        Aufgabenverwaltung, Status, Priorität.{"  "}
         Tabelle <code>tasks</code> mit <code>project_id</code>.
       </p>
     </div>
@@ -230,7 +231,7 @@ function CommsPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Kommunikation</h2>
       <p className="text-sm text-white/70">
-        Chat / Kommentare innerhalb des Projekts.  
+        Chat / Kommentare innerhalb des Projekts.{"  "}
         Tabelle <code>comments</code> mit <code>project_id</code>.
       </p>
     </div>
@@ -242,7 +243,7 @@ function ReportsPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Berichte & Export</h2>
       <p className="text-sm text-white/70">
-        Generierung von CSV/PDF-Berichten.  
+        Generierung von CSV/PDF-Berichten.{"  "}
         Daten aus anderen Modulen.
       </p>
     </div>
@@ -254,7 +255,7 @@ function LocationsPanel({ projectId }: { projectId: string }) {
     <div className="space-y-2">
       <h2 className="text-lg font-semibold">Standortplanung</h2>
       <p className="text-sm text-white/70">
-        Zuordnung von Aufgaben oder Schichten zu Orten.  
+        Zuordnung von Aufgaben oder Schichten zu Orten.{"  "}
         Tabelle <code>locations</code> mit <code>project_id</code>.
       </p>
     </div>
