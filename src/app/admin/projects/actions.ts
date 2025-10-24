@@ -72,3 +72,19 @@ export async function createProjectAction(formData: FormData) {
 
   revalidatePath("/admin/projects");
 }
+
+export async function updateProjectSettings(
+  id: string,
+  newSettings: Record<string, any>
+) {
+  const supabase = getAdminClient();
+  const { error } = await supabase
+    .from("projects")
+    .update({ settings: newSettings })
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
+
+  // Seite aktualisieren
+  revalidatePath(`/admin/projects/${id}`);
+}

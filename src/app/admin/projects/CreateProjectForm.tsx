@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { createProjectAction } from "./actions";
-import { MODULE_OPTIONS, type ModuleKey } from "./modules";
+import { MODULE_OPTIONS, type ModuleKey } from "./moduleDefs";
 
 export default function CreateProjectForm({
   defaultModules = ["shiftplan", "availability"] as ModuleKey[],
@@ -17,15 +17,18 @@ export default function CreateProjectForm({
     );
   }
 
-  function onSubmit(form: HTMLFormElement) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setError(null);
-    const fd = new FormData(form);
+
+    const formEl = e.currentTarget;
+    const fd = new FormData(formEl);
     fd.set("modules", JSON.stringify(selected));
 
     startTransition(async () => {
       try {
         await createProjectAction(fd);
-        form.reset();
+        formEl.reset();
         setSelected(defaultModules);
       } catch (e: any) {
         setError(e?.message ?? "Unbekannter Fehler beim Erstellen.");
@@ -36,9 +39,12 @@ export default function CreateProjectForm({
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur">
       <h2 className="text-xl font-semibold">Neues Projekt</h2>
-      <p className="text-sm text-white/70 mb-4">Name, Beschreibung und Module wählen.</p>
+      <p className="text-sm text-white/70 mb-4">
+        Name, Beschreibung und Module wählen.
+      </p>
 
-      <form action={onSubmit as any} className="space-y-4">
+      {/* Wichtig: onSubmit statt action */}
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm">Projektname</label>
           <input
@@ -68,11 +74,18 @@ export default function CreateProjectForm({
                   key={m.key}
                   type="button"
                   onClick={() => toggleModule(m.key)}
-                  className={`rounded-lg border px-3 py-2 text-sm transition
-                    ${active ? "border-white/30 bg-white/10" : "border-white/10 hover:border-white/20"}`}
+                  className={`rounded-lg border px-3 py-2 text-sm transition ${
+                    active
+                      ? "border-white/30 bg-white/10"
+                      : "border-white/10 hover:border-white/20"
+                  }`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className={`inline-block h-2 w-2 rounded-full ${active ? "bg-white/80" : "bg-white/30"}`} />
+                    <span
+                      className={`inline-block h-2 w-2 rounded-full ${
+                        active ? "bg-white/80" : "bg-white/30"
+                      }`}
+                    />
                     {m.label}
                   </div>
                 </button>
