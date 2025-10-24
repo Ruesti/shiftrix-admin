@@ -1,132 +1,79 @@
 "use client";
 
-import { useState } from "react";
-import type { ColumnKey, ColumnDef } from "./EmployeesClient";
+import { useEffect, useMemo, useState } from "react";
 
-const slugify = (v: string) =>
-  v.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-_]/g, "").slice(0, 40);
+type Column = {
+  key: string;
+  label: string;
+  visible: boolean;
+  builtin?: boolean;
+};
+
+type Props = {
+  columns: Column[];                 // vom Server/Eltern
+  order: string[];                   // gewünschte Reihenfolge der keys
+  onChangeColumns?: (cols: Column[]) => void;
+  storageKey?: string;               // optionaler Key für localStorage
+};
 
 export default function ColumnManager({
   columns,
   order,
   onChangeColumns,
-  onChangeOrder,
-}: {
-  columns: ColumnDef[];
-  order: ColumnKey[];
-  onChangeColumns: (cols: ColumnDef[]) => void;
-  onChangeOrder: (o: ColumnKey[]) => void;
-}) {
-  const [newLabel, setNewLabel] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  storageKey = "employees.columns",
+}: Props) {
+  // 1) SSR-stabil: initialer State = Props (kein window/localStorage!)
+  const [cols, setCols] = useState<Column[]>(columns);
 
-  const isCustomCol = (k: ColumnKey) => (k as string).startsWith("custom:");
+  // 2) Nach Mount hydrieren wir optional Client-Overrides
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return;
 
-  function setVisible(key: ColumnKey, visible: boolean) {
-    onChangeColumns(columns.map((c) => (c.key === key ? { ...c, visible } : c)));
-  }
-  function setLabel(key: ColumnKey, label: string) {
-    onChangeColumns(columns.map((c) => (c.key === key ? { ...c, label } : c)));
-  }
-  function addCustom() {
-    setError(null);
-    const label = newLabel.trim();
-    if (!label) {
-      setError("Bezeichnung eingeben");
-      return;
+      const saved = JSON.parse(raw) as Partial<Record<string, boolean>>;
+      // Nur Sichtbarkeit übernehmen, nichts hinzufügen/entfernen
+      setCols((prev) =>
+        prev.map((c) => ({ ...c, visible: saved[c.key] ?? c.visible }))
+      );
+    } catch {
+      // still – nie die SSR-HTML ändern, wenn parsing fehlschlägt
     }
-    const id = slugify(label);
-    const key: ColumnKey = `custom:${id}` as ColumnKey;
-    if (columns.some((c) => c.key === key)) {
-      setError("Spalte existiert bereits");
-      return;
-    }
-    onChangeColumns([...columns, { key, label, visible: true }]);
-    onChangeOrder([...order, key]);
-    setNewLabel("");
-  }
-  function removeCustom(key: ColumnKey) {
-    if (!isCustomCol(key)) return;
-    onChangeColumns(columns.filter((c) => c.key !== key));
-    onChangeOrder(order.filter((k) => k !== key));
-  }
-  function move(key: ColumnKey, dir: -1 | 1) {
-    const idx = order.indexOf(key);
-    const j = idx + dir;
-    if (idx < 0 || j < 0 || j >= order.length) return;
-    const next = order.slice();
-    [next[idx], next[j]] = [next[j], next[idx]];
-    onChangeOrder(next);
-  }
+  }, [storageKey]);
+
+  // 3) Deterministische Reihenfolge: erst `order`, dann Rest – keine locale-abhängige Sortierung
+  const ordered = useMemo(() => {
+    const byKey = new Map(cols.map((c) => [c.key, c]));
+    const inOrder = order.filter((k) => byKey.has(k)).map((k) => byKey.get(k)!);
+    const rest = cols.filter((c) => !order.includes(c.key));
+    return [...inOrder, ...rest];
+  }, [cols, order]);
+
+  // 4) Handler: State setzen, Parent informieren, und (nur am Client) speichern
+  const toggle = (key: string, nextVisible: boolean) => {
+    setCols((prev) => {
+      const next = prev.map((c) => (c.key === key ? { ...c, visible: nextVisible } : c));
+      onChangeColumns?.(next);
+      try {
+        const bag = Object.fromEntries(next.map((c) => [c.key, c.visible]));
+        localStorage.setItem(storageKey, JSON.stringify(bag));
+      } catch {}
+      return next;
+    });
+  };
 
   return (
-    <details className="ml-0 md:ml-auto">
-      <summary className="cursor-pointer select-none text-sm text-white/80">Spalten</summary>
-      <div className="mt-2 space-y-3 p-3 rounded-brand border border-white/10 bg-white/5 min-w-[280px]">
-        <div className="space-y-2 max-h-64 overflow-auto pr-1">
-          {order.map((k) => {
-            const col = columns.find((c) => c.key === k)!;
-            const isBuiltin = !isCustomCol(k);
-            return (
-              <div key={k} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={col.visible}
-                  onChange={(e) => setVisible(k, e.target.checked)}
-                  title="Sichtbar"
-                />
-                <input
-                  value={col.label}
-                  onChange={(e) => setLabel(k, e.target.value)}
-                  className="flex-1 rounded-brand border border-white/10 bg-white/5 px-2 py-1 text-sm outline-none"
-                  title="Spaltenbezeichnung"
-                />
-                <div className="flex items-center gap-1">
-                  <button
-                    className="px-2 py-1 rounded-brand border border-white/10"
-                    onClick={() => move(k, -1)}
-                    title="nach oben"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    className="px-2 py-1 rounded-brand border border-white/10"
-                    onClick={() => move(k, 1)}
-                    title="nach unten"
-                  >
-                    ↓
-                  </button>
-                  {!isBuiltin && (
-                    <button
-                      className="px-2 py-1 rounded-brand border border-white/10 text-red-300"
-                      onClick={() => removeCustom(k)}
-                      title="Spalte entfernen"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+    <div className="space-y-2">
+      {ordered.map((col) => (
+        <div key={col.key} className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={col.visible}
+            onChange={(e) => toggle(col.key, e.currentTarget.checked)}
+          />
+          <span className="text-sm">{col.label}</span>
         </div>
-
-        <div className="border-top border-white/10 pt-3 space-y-2">
-          <div className="text-xs text-white/60">Eigene Spalte hinzufügen</div>
-          <div className="flex items-center gap-2">
-            <input
-              value={newLabel}
-              onChange={(e) => setNewLabel(e.target.value)}
-              placeholder="Bezeichnung (z. B. Notiz)"
-              className="flex-1 rounded-brand border border-white/10 bg-white/5 px-2 py-1 text-sm outline-none"
-            />
-            <button className="btn btn-primary text-sm px-3 py-1.5" onClick={addCustom}>
-              Hinzufügen
-            </button>
-          </div>
-          {error && <div className="text-xs text-red-300">{error}</div>}
-        </div>
-      </div>
-    </details>
+      ))}
+    </div>
   );
 }
