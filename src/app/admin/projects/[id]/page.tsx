@@ -11,15 +11,16 @@ const MODULE_LABELS = Object.fromEntries(
   MODULE_OPTIONS.map((o) => [o.key, o.label] as const)
 ) as Record<ModuleKey, string>;
 
+// WICHTIG: Beide als Promise typisieren
 type Props = {
-  // ⬇️ WICHTIG: params als Promise, damit es mit deinem PageProps-Constraint kompatibel ist
   params: Promise<{ id: string }>;
-  searchParams: { tab?: string };
+  searchParams: Promise<{ tab?: string }>;
 };
 
 export default async function ProjectDetailPage({ params, searchParams }: Props) {
-  // ⬇️ params auflösen
-  const { id } = await params;
+  // beide Props auflösen (parallel)
+  const [{ id }, q] = await Promise.all([params, searchParams]);
+  const tab = q?.tab;
 
   const project = await fetchProjectById(id);
   if (!project) notFound();
@@ -33,7 +34,7 @@ export default async function ProjectDetailPage({ params, searchParams }: Props)
   ];
 
   const current =
-    tabs.find((t) => t.key === (searchParams.tab || ""))?.key ??
+    tabs.find((t) => t.key === (tab || ""))?.key ??
     (activeModules[0] || "overview");
 
   return (
@@ -122,6 +123,8 @@ export default async function ProjectDetailPage({ params, searchParams }: Props)
 
 /* ---------- Panels (Serverkomponenten / Platzhalter) ---------- */
 
+import type { ModuleKey as _MK } from "../moduleDefs"; // nur um TS ruhig zu halten
+
 function OverviewPanel(props: {
   projectId: string;
   modules: ModuleKey[];
@@ -165,8 +168,6 @@ function OverviewPanel(props: {
     </div>
   );
 }
-
-/* ---------------- Weitere Platzhalter-Panels ---------------- */
 
 function AvailabilityPanel({ projectId }: { projectId: string }) {
   return (
