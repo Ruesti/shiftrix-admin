@@ -12,12 +12,16 @@ const MODULE_LABELS = Object.fromEntries(
 ) as Record<ModuleKey, string>;
 
 type Props = {
-  params: { id: string };
+  // ⬇️ WICHTIG: params als Promise, damit es mit deinem PageProps-Constraint kompatibel ist
+  params: Promise<{ id: string }>;
   searchParams: { tab?: string };
 };
 
 export default async function ProjectDetailPage({ params, searchParams }: Props) {
-  const project = await fetchProjectById(params.id);
+  // ⬇️ params auflösen
+  const { id } = await params;
+
+  const project = await fetchProjectById(id);
   if (!project) notFound();
 
   const activeModules = (project.modules ?? []) as ModuleKey[];
