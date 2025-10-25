@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateProjectSettings } from "../actions";
+import { updateProjectSettings } from "../actions.server";
+
 
 export default function SettingsPanelClient({
   projectId,

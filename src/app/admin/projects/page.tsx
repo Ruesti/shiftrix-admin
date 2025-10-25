@@ -1,11 +1,26 @@
-import { fetchProjects } from "./actions";
+// src/app/admin/projects/page.tsx
+export const dynamic    = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+export const runtime    = "nodejs";
+
+import Link from "next/link";
+import { fetchProjects, fetchProjectById } from "./actions.server"; // bzw. "./actions.server"
+
 import { MODULE_OPTIONS, type ProjectRow } from "./modules";
 import CreateProjectForm from "./CreateProjectForm";
-import Link from "next/link";
 
+const fmtDE = new Intl.DateTimeFormat("de-DE");
 
 export default async function ProjectsPage() {
-  const list: ProjectRow[] = await fetchProjects();
+  let list: ProjectRow[] = [];
+  try {
+    const res = await fetchProjects();      // darf NULL/undefined zurückgeben, wenn ENV fehlt
+    list = Array.isArray(res) ? res : [];
+  } catch {
+    // keine Exception nach oben werfen -> Build bleibt stabil
+    list = [];
+  }
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8 space-y-10">
@@ -18,8 +33,12 @@ export default async function ProjectsPage() {
 
       <div className="space-y-3">
         <h2 className="text-lg font-semibold">Deine Projekte</h2>
+
         {list.length === 0 ? (
-          <p className="text-white/60">Noch keine Projekte angelegt.</p>
+          <div className="space-y-2">
+            <p className="text-white/60">Noch keine Projekte angelegt <span className="text-white/30">oder Supabase nicht konfiguriert</span>.</p>
+            <p className="text-xs text-white/40">Prüfe <code>NEXT_PUBLIC_SUPABASE_URL</code>, <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> und <code>SUPABASE_SERVICE_ROLE_KEY</code> in Vercel.</p>
+          </div>
         ) : (
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {list.map((p) => (
@@ -30,7 +49,7 @@ export default async function ProjectsPage() {
                     {p.description && <p className="text-sm text-white/70 mt-1">{p.description}</p>}
                   </div>
                   <span className="text-xs text-white/50">
-                    {new Date(p.created_at).toLocaleDateString("de-DE")}
+                    {fmtDE.format(new Date(p.created_at))}
                   </span>
                 </div>
 
@@ -53,14 +72,13 @@ export default async function ProjectsPage() {
                 </div>
 
                 <div className="mt-4 flex gap-3">
-  <Link
-    href={`/admin/projects/${p.id}`}
-    className="text-sm rounded-md border border-white/10 px-3 py-1 hover:border-white/20 transition"
-  >
-    Öffnen
-  </Link>
-</div>
-
+                  <Link
+                    href={`/admin/projects/${p.id}`}
+                    className="text-sm rounded-md border border-white/10 px-3 py-1 hover:border-white/20 transition"
+                  >
+                    Öffnen
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

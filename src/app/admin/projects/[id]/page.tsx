@@ -1,7 +1,13 @@
+export const dynamic    = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+export const runtime    = "nodejs";
+
 // src/app/admin/projects/[id]/page.tsx
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { fetchProjectById } from "../actions";
+import { fetchProjects, fetchProjectById } from "../actions.server"; // bzw. "./actions.server"
+
 import { MODULE_OPTIONS, type ModuleKey } from "../moduleDefs";
 import Tabs from "./Tabs";
 import SettingsPanelClient from "./SettingsPanelClient";
