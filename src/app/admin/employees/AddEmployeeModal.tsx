@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Employee as Emp } from "../../../store/employees";
-import type { ColumnDef } from "./EmployeesClient";
+import type { ColumnDef } from "./types";
 
 function Field({
   label,
