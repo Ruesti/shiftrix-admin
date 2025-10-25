@@ -1,5 +1,7 @@
 "use client";
 
+import type { ColumnKey, ColumnDef } from "./types";
+
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AdminShell } from "../../../components/AdminShell";
@@ -206,11 +208,11 @@ export default function EmployeesClient() {
         </div>
 
         <ColumnManager
-          columns={columns}
-          order={order}
-          onChangeColumns={setColumns}
-          onChangeOrder={setOrder}
-        />
+  columns={columns}
+  order={order}
+  onChangeColumns={(cols) => setColumns(cols)}   // ← Wrapper statt setColumns direkt
+  onChangeOrder={(ord) => setOrder(ord)}         // ← dito
+/>
 
         <button onClick={() => setOpenAdd(true)} className="btn btn-primary md:ml-auto">
           + Mitarbeiter
