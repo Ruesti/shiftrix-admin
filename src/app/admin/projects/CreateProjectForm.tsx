@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createProjectAction } from "./actions";
+import { createProjectAction } from "./actions.server";
 import { MODULE_OPTIONS, type ModuleKey } from "./moduleDefs";
 
 export default function CreateProjectForm({
@@ -23,11 +23,21 @@ export default function CreateProjectForm({
 
     const formEl = e.currentTarget;
     const fd = new FormData(formEl);
-    fd.set("modules", JSON.stringify(selected));
+
+    // 🔧 Hier: FormData → Objekt umwandeln
+    const name = fd.get("name")?.toString() ?? "";
+    const description = fd.get("description")?.toString() ?? "";
+    const modules = selected;
 
     startTransition(async () => {
       try {
-        await createProjectAction(fd);
+        await createProjectAction({
+          name,
+          description,
+          modules,
+          settings: {},
+        });
+
         formEl.reset();
         setSelected(defaultModules);
       } catch (e: any) {
@@ -43,8 +53,8 @@ export default function CreateProjectForm({
         Name, Beschreibung und Module wählen.
       </p>
 
-      {/* Wichtig: onSubmit statt action */}
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Name */}
         <div className="space-y-2">
           <label className="text-sm">Projektname</label>
           <input
@@ -55,6 +65,7 @@ export default function CreateProjectForm({
           />
         </div>
 
+        {/* Beschreibung */}
         <div className="space-y-2">
           <label className="text-sm">Beschreibung (optional)</label>
           <textarea
@@ -64,6 +75,7 @@ export default function CreateProjectForm({
           />
         </div>
 
+        {/* Module */}
         <div className="space-y-2">
           <label className="text-sm">Module aktivieren</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
@@ -96,6 +108,7 @@ export default function CreateProjectForm({
 
         {error && <div className="text-sm text-red-400">{error}</div>}
 
+        {/* Button */}
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
