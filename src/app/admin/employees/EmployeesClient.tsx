@@ -1,6 +1,6 @@
 "use client";
 
-import type { ColumnKey, ColumnDef } from "./types";
+import type { ColumnKey, ColumnDef, BuiltinKey } from "./types";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,10 +22,7 @@ const ORG_AVAIL_POLICY = {
   shiftsPerDay: 1,
 };
 
-/** ==== Typen ==== */
-type BuiltinKey = "name" | "role" | "department" | "status" | "email" | "phone" | "hireDate";
-export type ColumnKey = BuiltinKey | `custom:${string}`;
-export type ColumnDef = { key: ColumnKey; label: string; visible: boolean };
+
 
 /** ==== Dummy-Daten (Initial) ==== */
 const FIRST = ["Alex", "Sam", "Mila", "Jonas", "Lea", "Paul", "Nora", "Tom", "Eva", "Jan", "Sara", "Luca", "Marek", "Aylin", "Ben"];
