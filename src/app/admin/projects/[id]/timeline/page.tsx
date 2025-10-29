@@ -9,12 +9,20 @@ type ProjectPeriod = {
   color?: string;
 };
 
-export default async function ProjectTimelinePage({ params }: { params: { id: string } }) {
-  const supabase = await supabaseServer();
+export default async function ProjectTimelinePage(
+  { params }: { params: Promise<{ id: string }> }  // 👈 Next 15: Promise
+) {
+  const { id } = await params;                      // 👈 auflösen
+
+  const supabase = await supabaseServer();          // 👈 deine async Factory
 
   const [{ data: project }, { data: periods }] = await Promise.all([
-    supabase.from("projects").select("*").eq("id", params.id).single(),
-    supabase.from("project_periods").select("*").eq("project_id", params.id).order("starts_at", { ascending: true }),
+    supabase.from("projects").select("*").eq("id", id).single(),
+    supabase
+      .from("project_periods")
+      .select("*")
+      .eq("project_id", id)
+      .order("starts_at", { ascending: true }),
   ]);
 
   if (!project) return notFound();
