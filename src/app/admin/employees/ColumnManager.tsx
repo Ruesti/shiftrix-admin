@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ColumnKey, ColumnDef } from "./types";
 
+
 type Props = {
   columns: ColumnDef[];
   order: ColumnKey[];
@@ -137,11 +138,18 @@ export default function ColumnManager({
 
   const visibleCount = ordered.filter((c) => c.visible).length;
 
+  const [mounted, setMounted] = useState(false);
+useEffect(() => setMounted(true), []);
+
+
   return (
     <details className="ml-0 md:ml-6">
       <summary className="cursor-pointer select-none inline-flex items-center gap-2 text-white/80 hover:text-white">
         <span className="font-medium">Spalten</span>
-        <span className="text-xs text-white/60">({visibleCount} sichtbar)</span>
+        <span className="text-xs text-white/60">
+  ({mounted ? visibleCount : "–"} sichtbar)
+</span>
+
       </summary>
 
       <div className="mt-2 rounded-xl border border-white/10 bg-white/5 p-3">
