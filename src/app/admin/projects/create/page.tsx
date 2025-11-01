@@ -1,12 +1,12 @@
 "use client";
 
 import { useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createProjectAction } from "../_actions/createProject";
 
-// shadcn/ui – Pfade ggf. anpassen
+// shadcn/ui
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -31,8 +31,7 @@ type FormValues = z.infer<typeof FormSchema>;
 
 export default function CreateProjectPage() {
   const [isPending, startTransition] = useTransition();
-
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormValues>({
+  const { register, handleSubmit, setValue, control, watch, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
     defaultValues: { project_type: "bounded", variable_headcount: false },
   });
@@ -45,7 +44,6 @@ export default function CreateProjectPage() {
       if (typeof v === "boolean") fd.append(k, v ? "true" : "false");
       else if (v != null && v !== "") fd.append(k, v as string);
     });
-
     startTransition(() => { createProjectAction(fd); });
   };
 
@@ -108,7 +106,9 @@ export default function CreateProjectPage() {
               <Label>Variable Teamgröße</Label>
               <p className="text-xs text-white/60">Bedarf kann pro Tag/Schicht variieren</p>
             </div>
-            <Switch onCheckedChange={(v) => setValue("variable_headcount", v)} />
+            <Controller name="variable_headcount" control={control} render={({ field }) => (
+              <Switch checked={!!field.value} onCheckedChange={field.onChange} />
+            )} />
           </div>
         </div>
 
