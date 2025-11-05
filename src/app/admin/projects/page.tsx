@@ -1,123 +1,56 @@
-import Link from "next/link";
-import { supabaseServer } from "@/lib/supabase/server";
-import DeleteProjectForm from "./_components/DeleteProjectForm";
-
-// dynamisches Rendering (nicht statisch cachen)
 export const dynamic = "force-dynamic";
 
-type ProjectRow = {
-  id: string;
-  name: string;
-  project_type?: string | null;
-  status?: string | null;
-  start_date?: string | null;
-  end_date?: string | null;
-  location?: string | null;
-  created_at?: string | null;
-};
+import Link from "next/link";
+import { supabaseServer } from "@/lib/supabase/server";
+import ProjectRow from "./ProjectRow";
 
-export default async function ProjectsIndexPage() {
+export default async function ProjectsPage() {
   const supabase = await supabaseServer();
-
   const { data: projects, error } = await supabase
     .from("projects")
-    .select(
-      "id,name,project_type,status,start_date,end_date,location,created_at"
-    )
+    .select("id, name, client_name, location, start_date, end_date, created_at")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <h1 className="text-2xl font-semibold mb-2">Projekte</h1>
-        <p className="text-red-400">
-          Fehler beim Laden: {error.message}
-        </p>
-        <Link
-          href="/admin/projects/create"
-          className="inline-block mt-4 rounded-brand bg-softbrew-blue px-4 py-2 text-white"
-        >
-          Projekt erstellen
-        </Link>
-      </div>
-    );
-  }
+  if (error) throw new Error(error.message);
 
   return (
-    <div className="mx-auto max-w-5xl p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">Projekte</h1>
-          <p className="text-white/60">
-            Erstellen, ansehen, bearbeiten & löschen
-          </p>
-        </div>
+    <section className="mx-auto max-w-6xl px-4 py-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Projekte</h1>
         <Link
           href="/admin/projects/create"
-          className="rounded-brand bg-softbrew-blue px-4 py-2 text-white hover:opacity-90 transition"
+          className="rounded-xl border border-white/15 bg-white/10 px-3 py-2 text-sm hover:bg-white/15 transition"
         >
           + Projekt erstellen
         </Link>
       </div>
 
-      {/* Liste */}
-      {!projects?.length ? (
-        <div className="rounded-brand border border-white/10 p-6 text-white/70">
-          Noch keine Projekte. Lege das erste an:
-          <Link href="/admin/projects/create" className="ml-2 underline">
-            Projekt erstellen
-          </Link>
-        </div>
-      ) : (
-        <ul className="space-y-3">
-          {projects.map((p: ProjectRow) => {
-            const type = p.project_type?.toUpperCase?.() ?? "OPEN";
-            const status = p.status ?? "PLANNED";
-            return (
-              <li
-                key={p.id}
-                className="rounded-brand border border-white/10 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-              >
-                <div>
-                  <div className="font-medium">{p.name}</div>
-                  <div className="text-sm text-white/60">
-                    {type} · {status}
-                    {p.start_date ? ` · ab ${p.start_date}` : ""}
-                    {p.end_date ? ` bis ${p.end_date}` : ""}
-                    {p.location ? ` · ${p.location}` : ""}
-                  </div>
-                </div>
+      <div className="rounded-2xl border border-white/10 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-white/5">
+            <tr className="[&>th]:px-4 [&>th]:py-3 text-left">
+              <th>Name</th>
+              <th>Auftraggeber</th>
+              <th>Ort</th>
+              <th>Zeitraum</th>
+              <th className="w-1">Aktion</th>
+            </tr>
+          </thead>
 
-                {/* Aktionen */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <Link
-                    href={`/admin/projects/${p.id}`}
-                    className="px-3 py-1.5 rounded-brand border border-white/10 hover:bg-white/5"
-                  >
-                    Details
-                  </Link>
-                  <Link
-                    href={`/admin/projects/${p.id}/timeline`}
-                    className="px-3 py-1.5 rounded-brand border border-white/10 hover:bg-white/5"
-                  >
-                    Timeline
-                  </Link>
-                  <Link
-                    href={`/admin/projects/${p.id}?tab=edit`}
-                    className="px-3 py-1.5 rounded-brand border border-white/10 hover:bg-white/5"
-                  >
-                    Bearbeiten
-                  </Link>
-
-                  {/* Client-Komponente */}
-                  <DeleteProjectForm id={p.id} />
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+          <tbody className="divide-y divide-white/10">
+            {(projects ?? []).map((p) => (
+              <ProjectRow key={p.id} project={p} />
+            ))}
+            {projects?.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-6 text-white/60">
+                  Noch keine Projekte. Lege oben ein neues Projekt an.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

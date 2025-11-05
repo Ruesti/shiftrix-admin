@@ -1,11 +1,12 @@
+import "server-only";
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-// Erwartet ENV-Variablen:
-// NEXT_PUBLIC_SUPABASE_URL
-// NEXT_PUBLIC_SUPABASE_ANON_KEY
-export async function supabaseServer() {
-  const cookieStore = await cookies(); // Next 15: async
+// Für Server Components / Server Actions: Cookies read-only.
+// set/remove sind No-Ops, damit es nicht in RSC crasht.
+export async function supabaseServer(): Promise<SupabaseClient> {
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,12 +16,11 @@ export async function supabaseServer() {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: any) {
-          // In Server Components/Aktionen ist Setzen erlaubt
-          cookieStore.set({ name, value, ...options });
+        set(_name: string, _value: string, _options: CookieOptions) {
+          /* no-op in RSC/Actions */
         },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: "", ...options, expires: new Date(0) });
+        remove(_name: string, _options: CookieOptions) {
+          /* no-op in RSC/Actions */
         },
       },
     }

@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "EditorConfig.EditorConfig",
+    "bradlc.vscode-tailwindcss",
+    "dsznajder.es7-react-js-snippets",
+    "pulkitgangwar.nextjs-snippets",
+    "mikestead.dotenv",
+    "eamodio.gitlens",
+    "rangav.vscode-thunder-client",
+    "humao.rest-client",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg",
+    "pkief.material-icon-theme"
+  ]
+}
