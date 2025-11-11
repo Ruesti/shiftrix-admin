@@ -3,7 +3,7 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { supabaseServer } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 
 const schema = z.object({
   name: z.string().min(2),
@@ -36,7 +36,7 @@ export async function createProjectAction(formData: FormData) {
     );
   }
 
-  const supabase = await supabaseServer();
+  const supabase = await createClient();
   const { data: authData, error: authErr } = await supabase.auth.getUser();
   if (authErr || !authData?.user) throw new Error("Nicht eingeloggt.");
   const userId = authData.user.id;

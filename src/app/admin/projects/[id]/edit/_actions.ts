@@ -1,6 +1,6 @@
 "use server";
 
-import { supabaseServer } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
 /* -----------------------------------------------------------
@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 ----------------------------------------------------------- */
 
 async function getUserIdOrThrow(): Promise<string> {
-  const sb = await supabaseServer();
+  const sb = await createClient();
   const { data, error } = await sb.auth.getUser();
   if (error || !data?.user) {
     throw new Error("Nicht eingeloggt.");
@@ -20,7 +20,7 @@ async function getUserIdOrThrow(): Promise<string> {
  *  (Wenn du später project_members nutzt, kann man das hier erweitern.)
  */
 async function assertProjectOwner(project_id: string): Promise<void> {
-  const sb = await supabaseServer();
+  const sb = await createClient();
 
   // Sichtbarkeit/Ownership per RLS-fähiger Query prüfen
   const { data: proj, error } = await sb
@@ -66,7 +66,7 @@ export async function upsertAssignmentAction(opts: {
   // Ownership prüfen (liefert frühe, klare Fehlermeldung statt generischem RLS-Error)
   await assertProjectOwner(project_id);
 
-  const supabase = await supabaseServer();
+  const supabase = await createClient();
 
   if (!employee_id) {
     const { error } = await supabase
@@ -101,7 +101,7 @@ export async function addRoleAction(
 ): Promise<void> {
   await assertProjectOwner(project_id);
 
-  const supabase = await supabaseServer();
+  const supabase = await createClient();
 
   // sort_index = max(sort_index) + 1 (SELECT erfordert SELECT-Policy auf project_roles)
   const { data: maxRow, error: maxErr } = await supabase
@@ -134,7 +134,7 @@ export async function renameRoleAction(
 ): Promise<void> {
   await assertProjectOwner(project_id);
 
-  const supabase = await supabaseServer();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("project_roles")
@@ -155,7 +155,7 @@ export async function deleteRoleAction(
 ): Promise<void> {
   await assertProjectOwner(project_id);
 
-  const supabase = await supabaseServer();
+  const supabase = await createClient();
 
   // Optional: zugehörige Assignments zuerst löschen, falls FK nicht ON DELETE CASCADE ist
   const { error: delAssErr } = await supabase

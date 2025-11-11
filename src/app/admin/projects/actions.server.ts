@@ -76,7 +76,10 @@ export async function createProjectAction(input: {
 }
 
 /* === Projekteinstellungen aktualisieren === */
-export async function updateProjectSettings(projectId: string, settings: unknown) {
+export async function updateProjectSettings(
+  projectId: string,
+  settings: unknown
+) {
   const sb = getSB();
   if (!sb)
     throw new Error(

@@ -1,5 +1,5 @@
 // src/app/admin/projects/[id]/timeline/page.tsx
-import { supabaseServer } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
 // Erzwinge dynamisches Rendering (falls ein Parent static params nutzt)
@@ -12,7 +12,7 @@ type ProjectRow = {
   description?: string | null;
   project_type?: string | null;
   start_date?: string | null; // YYYY-MM-DD
-  end_date?: string | null;   // YYYY-MM-DD
+  end_date?: string | null; // YYYY-MM-DD
   recurrence?: string | null;
   planned_headcount?: number | null;
   variable_headcount?: boolean | null;
@@ -27,7 +27,7 @@ type ProjectPeriod = {
   project_id: string;
   label?: string | null;
   starts_at: string; // ISO datetime
-  ends_at: string;   // ISO datetime
+  ends_at: string; // ISO datetime
   color?: string | null;
 };
 
@@ -46,11 +46,13 @@ function fmtDateTime(iso: string | null | undefined) {
   }
 }
 
-export default async function ProjectTimelinePage(
-  { params }: { params: Promise<{ id: string }> }
-) {
+export default async function ProjectTimelinePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
-  const supabase = await supabaseServer();
+  const supabase = await createClient();
 
   // Projekt laden (maybeSingle: kein Error bei 0 Rows)
   const { data: project } = await supabase
@@ -71,13 +73,13 @@ export default async function ProjectTimelinePage(
   const statusLabel = project.status ?? "PLANNED";
 
   // Zeitfenster/Phasen laden
-  const { data: periods } = await supabase
+  const { data: periods } = (await supabase
     .from("project_periods")
     .select("*")
     .eq("project_id", id)
-    .order("starts_at", { ascending: true }) as {
-      data: ProjectPeriod[] | null;
-    };
+    .order("starts_at", { ascending: true })) as {
+    data: ProjectPeriod[] | null;
+  };
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 p-6">
@@ -92,7 +94,9 @@ export default async function ProjectTimelinePage(
             {project.location ? ` · ${project.location}` : ""}
           </p>
           {project.client_name && (
-            <p className="text-white/50 text-sm mt-1">Kunde: {project.client_name}</p>
+            <p className="text-white/50 text-sm mt-1">
+              Kunde: {project.client_name}
+            </p>
           )}
           {project.description && (
             <p className="text-white/70 text-sm mt-2">{project.description}</p>
@@ -112,7 +116,10 @@ export default async function ProjectTimelinePage(
 
         <div className="space-y-3">
           {periods?.map((p) => (
-            <div key={p.id} className="border border-white/10 rounded-brand p-3">
+            <div
+              key={p.id}
+              className="border border-white/10 rounded-brand p-3"
+            >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                 <div className="font-medium">{p.label ?? "Zeitfenster"}</div>
                 <div className="text-sm text-white/60">

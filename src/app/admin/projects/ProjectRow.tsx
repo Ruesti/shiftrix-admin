@@ -1,42 +1,32 @@
-"use client";
+// src/app/admin/projects/ProjectRow.tsx
+import Link from "next/link";
+import type { ProjectDB } from "@/types/project";
 
-import { useRouter } from "next/navigation";
-import DeleteProjectButton from "./DeleteProjectButton";
-
-type Project = {
-  id: string;
-  name: string;
-  client_name: string | null;
-  location: string | null;
-  start_date: string | null;
-  end_date: string | null;
-};
-
-export default function ProjectRow({ project }: { project: Project }) {
-  const router = useRouter();
-
+export default function ProjectRow({ project }: { project: ProjectDB }) {
+  const name = project.name ?? "Unbenanntes Projekt";
+  const client = project.client_name ?? "—";
+  const loc = project.location ?? "—";
   const start = project.start_date
-    ? new Date(project.start_date).toLocaleDateString("de-DE")
+    ? new Date(project.start_date).toLocaleDateString()
     : "—";
   const end = project.end_date
-    ? new Date(project.end_date).toLocaleDateString("de-DE")
-    : "";
-  const Zeitraum = end ? `${start} – ${end}` : start;
-
-  const editHref = `/admin/projects/${project.id}/edit`;
+    ? new Date(project.end_date).toLocaleDateString()
+    : "—";
 
   return (
-    <tr
-      className="group cursor-pointer hover:bg-white/5"
-      onClick={() => router.push(editHref)}
-    >
-      <td className="px-4 py-3 font-medium">{project.name}</td>
-      <td className="px-4 py-3 text-white/80">{project.client_name ?? "—"}</td>
-      <td className="px-4 py-3 text-white/80">{project.location ?? "—"}</td>
-      <td className="px-4 py-3 text-white/70">{Zeitraum}</td>
-      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-        <DeleteProjectButton id={project.id} />
-      </td>
-    </tr>
+    <div className="flex items-center justify-between py-3">
+      <div className="min-w-0">
+        <div className="font-medium truncate">{name}</div>
+        <div className="text-sm opacity-70 truncate">
+          {client} · {loc} · {start} — {end}
+        </div>
+      </div>
+      <Link
+        href={`/admin/projects/${project.id}/edit`}
+        className="shrink-0 rounded bg-white/10 px-3 py-1.5 text-sm hover:bg-white/15 transition"
+      >
+        Öffnen
+      </Link>
+    </div>
   );
 }

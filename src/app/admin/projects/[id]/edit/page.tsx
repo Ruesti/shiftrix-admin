@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { supabaseServer } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import ProjectEditorClient from "./ProjectEditorClient";
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 
 export default async function EditProjectPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await supabaseServer();
+  const supabase = await createClient();
 
   const { data: project } = await supabase
     .from("projects")
